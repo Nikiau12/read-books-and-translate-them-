@@ -11,11 +11,15 @@ function App() {
   const [translation, setTranslation] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('openai_api_key') || '');
+  // Приоритет: 1) Вшитый ENV ключ, 2) Кэш браузера, 3) Пусто
+  const [apiKey, setApiKey] = useState(() => import.meta.env.VITE_OPENAI_API_KEY || localStorage.getItem('openai_api_key') || '');
   const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('openai_api_key', apiKey);
+    // Сохраняем в кэш только если ключ не вшит жестко из ENV
+    if (!import.meta.env.VITE_OPENAI_API_KEY && apiKey) {
+      localStorage.setItem('openai_api_key', apiKey);
+    }
   }, [apiKey]);
 
   const handleSelection = async (text: string, context: string, rect: DOMRect) => {
