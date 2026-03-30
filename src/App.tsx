@@ -38,7 +38,11 @@ function App() {
       const result = await translateText(text, context, apiKey, baseUrl);
       setTranslation(result);
     } catch (err: any) {
-      setTranslation(`Error: ${err.message}`);
+      if (err.message.includes('Failed to fetch')) {
+        setTranslation('Ошибка соединения 🌐. Ваш провайдер блокирует доступ к OpenAI. Пожалуйста, включите VPN на компьютере, либо укажите URL прокси-сервера в настройках (⚙️ шестеренка).');
+      } else {
+        setTranslation(`Ошибка: ${err.message}`);
+      }
     } finally {
       setLoading(false);
     }
