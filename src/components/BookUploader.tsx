@@ -87,20 +87,32 @@ export const BookUploader: React.FC<Props> = ({ onFileSelect }) => {
                 key={book.filename}
                 className="glass-panel"
                 style={{
-                  padding: '1.5rem 1rem',
+                  padding: book.cover ? '0' : '1.5rem 1rem',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
                   cursor: 'pointer',
                   transition: 'transform 0.2s, box-shadow 0.2s',
                   position: 'relative',
+                  overflow: 'hidden',
                   border: loadingBook === book.filename ? '1px solid var(--accent)' : '1px solid rgba(255,255,255,0.1)'
                 }}
                 onClick={() => loadPreloadedBook(book)}
               >
-                <BookOpen size={48} style={{ marginBottom: '1rem', color: 'var(--accent)', opacity: 0.8 }} />
-                <span style={{ textAlign: 'center', fontSize: '1.1rem', fontWeight: 500 }}>{book.title}</span>
-                {loadingBook === book.filename && <div style={{ marginTop: '16px', fontSize: '0.9rem', color: 'var(--accent)' }}>Загрузка...</div>}
+                {book.cover ? (
+                  <img 
+                    src={`${import.meta.env.BASE_URL}${book.cover.substring(1)}`} 
+                    alt={book.title} 
+                    style={{ width: '100%', height: '260px', objectFit: 'cover', opacity: loadingBook === book.filename ? 0.5 : 1 }} 
+                  />
+                ) : (
+                  <BookOpen size={48} style={{ marginBottom: '1rem', color: 'var(--accent)', opacity: 0.8 }} />
+                )}
+                
+                <div style={{ padding: '1rem', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', background: book.cover ? 'rgba(0,0,0,0.6)' : 'transparent', position: book.cover ? 'absolute' : 'relative', bottom: 0 }}>
+                  <span style={{ textAlign: 'center', fontSize: '1.1rem', fontWeight: 500, color: '#fff', textShadow: book.cover ? '0 1px 3px rgba(0,0,0,0.8)' : 'none' }}>{book.title}</span>
+                  {loadingBook === book.filename && <div style={{ marginTop: '8px', fontSize: '0.9rem', color: '#ccc' }}>Загрузка...</div>}
+                </div>
               </div>
             ))}
           </div>

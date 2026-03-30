@@ -10,12 +10,21 @@ if (!fs.existsSync(booksDir)) {
   fs.mkdirSync(booksDir, { recursive: true });
 }
 
-const files = fs.readdirSync(booksDir).filter(f => f.endsWith('.epub'));
-const library = files.map(f => ({
-  filename: f,
-  title: f.replace('.epub', '').replace(/[-_]/g, ' '),
-  url: `/books/${f}`
-}));
+const allFiles = fs.readdirSync(booksDir);
+const epubs = allFiles.filter(f => f.endsWith('.epub'));
+
+const library = epubs.map(f => {
+  const baseName = f.replace('.epub', '');
+  const coverJpg = allFiles.find(file => file === `${baseName}.jpg`);
+  const coverPng = allFiles.find(file => file === `${baseName}.png`);
+  
+  return {
+    filename: f,
+    title: baseName.replace(/[-_]/g, ' '),
+    url: `/books/${f}`,
+    cover: coverJpg ? `/books/${coverJpg}` : (coverPng ? `/books/${coverPng}` : null)
+  };
+});
 
 fs.writeFileSync(path.join(__dirname, 'src', 'library.json'), JSON.stringify(library, null, 2));
 console.log(`Generated library.json with ${library.length} books.`);
