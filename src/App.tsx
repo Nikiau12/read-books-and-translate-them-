@@ -13,14 +13,16 @@ function App() {
   
   // Приоритет: 1) Вшитый ENV ключ, 2) Кэш браузера, 3) Пусто
   const [apiKey, setApiKey] = useState(() => import.meta.env.VITE_OPENAI_API_KEY || localStorage.getItem('openai_api_key') || '');
+  const [baseUrl, setBaseUrl] = useState(() => localStorage.getItem('openai_base_url') || 'https://api.openai.com/v1');
   const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
+    localStorage.setItem('openai_base_url', baseUrl);
     // Сохраняем в кэш только если ключ не вшит жестко из ENV
     if (!import.meta.env.VITE_OPENAI_API_KEY && apiKey) {
       localStorage.setItem('openai_api_key', apiKey);
     }
-  }, [apiKey]);
+  }, [apiKey, baseUrl]);
 
   const handleSelection = async (text: string, context: string, rect: DOMRect) => {
     setSelectedText({ text, context, rect });
@@ -33,7 +35,7 @@ function App() {
 
     setLoading(true);
     try {
-      const result = await translateText(text, context, apiKey);
+      const result = await translateText(text, context, apiKey, baseUrl);
       setTranslation(result);
     } catch (err: any) {
       setTranslation(`Error: ${err.message}`);
@@ -124,6 +126,20 @@ function App() {
               />
               <p style={{ marginTop: '8px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                 Your key is saved locally in your browser. It is required for context-aware translations.
+              </p>
+              
+              <label style={{ display: 'block', marginBottom: '8px', marginTop: '16px', fontWeight: 500 }}>
+                API Base URL (for proxies)
+              </label>
+              <input 
+                type="text"
+                value={baseUrl}
+                onChange={e => setBaseUrl(e.target.value)}
+                placeholder="https://api.openai.com/v1"
+                className="api-input"
+              />
+              <p style={{ marginTop: '8px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                Change this if you are using an API proxy (e.g., in regions where OpenAI is blocked).
               </p>
             </div>
             <button className="primary-btn" style={{ marginTop: '24px', width: '100%' }} onClick={() => setShowSettings(false)}>

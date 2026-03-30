@@ -1,5 +1,6 @@
-export async function translateText(text: string, context: string, apiKey: string): Promise<string> {
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+export async function translateText(text: string, context: string, apiKey: string, baseUrl: string): Promise<string> {
+  const endpoint = `${baseUrl.replace(/\/$/, '')}/chat/completions`;
+  const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
