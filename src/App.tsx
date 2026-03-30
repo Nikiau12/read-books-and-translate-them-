@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { BookUploader } from './components/BookUploader';
 import { EpubViewer } from './components/EpubViewer';
 import { translateText } from './TranslationService';
-import { BookOpen, Settings } from 'lucide-react';
+import { BookOpen, Settings, ArrowLeft } from 'lucide-react';
 import './index.css';
 
 function App() {
@@ -66,8 +66,8 @@ function App() {
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
           {bookFile && (
-            <button className="close-btn" onClick={(e) => { e.stopPropagation(); handleCloseBook(); }}>
-              Close Book
+            <button className="close-btn" style={{ display: 'flex', alignItems: 'center', gap: '6px' }} onClick={(e) => { e.stopPropagation(); handleCloseBook(); }}>
+              <ArrowLeft size={18} /> К библиотеке
             </button>
           )}
           <button className="nav-btn" onClick={(e) => { e.stopPropagation(); setShowSettings(true); }}>
