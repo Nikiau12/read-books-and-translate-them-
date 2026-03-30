@@ -1,11 +1,31 @@
-import React, { useCallback } from 'react';
-import { UploadCloud } from 'lucide-react';
+import React, { useCallback, useState } from 'react';
+import { UploadCloud, BookOpen } from 'lucide-react';
+import libraryData from '../library.json';
 
 interface Props {
   onFileSelect: (file: File) => void;
 }
 
 export const BookUploader: React.FC<Props> = ({ onFileSelect }) => {
+  const [loadingBook, setLoadingBook] = useState<string | null>(null);
+
+  const loadPreloadedBook = async (book: any) => {
+    setLoadingBook(book.filename);
+    try {
+      const urlPath = book.url.startsWith('/') ? book.url.substring(1) : book.url;
+      const res = await fetch(`${import.meta.env.BASE_URL}${urlPath}`);
+      if (!res.ok) throw new Error('Failed to fetch book');
+      const blob = await res.blob();
+      const file = new File([blob], book.filename, { type: 'application/epub+zip' });
+      onFileSelect(file);
+    } catch (err) {
+      console.error('Failed to load book', err);
+      alert('Failed to load book from library.');
+    } finally {
+      setLoadingBook(null);
+    }
+  };
+
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
@@ -57,6 +77,35 @@ export const BookUploader: React.FC<Props> = ({ onFileSelect }) => {
            </label>
         </div>
       </div>
+
+      {libraryData && libraryData.length > 0 && (
+        <div style={{ marginTop: '2rem', width: '100%', maxWidth: '800px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <h3 style={{ marginBottom: '1.5rem', textAlign: 'center', fontWeight: '500', color: 'var(--text)' }}>📚 Выберите книгу из библиотеки</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem', width: '100%' }}>
+            {libraryData.map((book: any) => (
+              <div 
+                key={book.filename}
+                className="glass-panel"
+                style={{
+                  padding: '1.5rem 1rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  position: 'relative',
+                  border: loadingBook === book.filename ? '1px solid var(--accent)' : '1px solid rgba(255,255,255,0.1)'
+                }}
+                onClick={() => loadPreloadedBook(book)}
+              >
+                <BookOpen size={48} style={{ marginBottom: '1rem', color: 'var(--accent)', opacity: 0.8 }} />
+                <span style={{ textAlign: 'center', fontSize: '1.1rem', fontWeight: 500 }}>{book.title}</span>
+                {loadingBook === book.filename && <div style={{ marginTop: '16px', fontSize: '0.9rem', color: 'var(--accent)' }}>Загрузка...</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
