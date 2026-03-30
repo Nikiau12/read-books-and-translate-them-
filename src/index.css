@@ -290,3 +290,30 @@ body {
   border-color: var(--accent);
 }
 
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .app-header {
+    padding: 0 1rem;
+  }
+  .app-main {
+    padding: 0.5rem;
+  }
+  .viewer-container {
+    padding: 0.25rem;
+  }
+  .reader-wrapper {
+    min-height: 80vh !important;
+  }
+  .title {
+    font-size: 1.25rem;
+  }
+  .translation-popover {
+    width: 90vw !important;
+    left: 5vw !important; /* Centered on phone */
+    max-height: 40vh;
+  }
+  .nav-btn {
+    padding: 0.5rem;
+  }
+}
+
