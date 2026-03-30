@@ -71,18 +71,29 @@ export const EpubViewer: React.FC<Props> = ({ file, onSelection, onClearSelectio
               }
             });
             contents.window.addEventListener('click', () => {
-              if (onClearSelectionRef.current) onClearSelectionRef.current();
+              const selection = contents.window.getSelection();
+              if (!selection || selection.toString().trim().length === 0) {
+                if (onClearSelectionRef.current) onClearSelectionRef.current();
+              }
             });
             contents.window.addEventListener('touchstart', () => {
-              if (onClearSelectionRef.current) onClearSelectionRef.current();
+              const selection = contents.window.getSelection();
+              if (!selection || selection.toString().trim().length === 0) {
+                if (onClearSelectionRef.current) onClearSelectionRef.current();
+              }
             }, { passive: true });
           });
 
           rendition.on('selected', (cfiRange: string) => {
             book.getRange(cfiRange).then((range) => {
               if (!range) return;
-              const text = range.toString();
-              const paragraph = range.commonAncestorContainer.textContent || text;
+              const text = range.toString().trim();
+              if (!text) return;
+              
+              let paragraph = range.commonAncestorContainer.textContent || text;
+              if (paragraph.length > 1500) {
+                paragraph = paragraph.substring(0, 1500) + '...';
+              }
               const contentsArray = rendition.getContents() as any;
               const iframe = contentsArray[0]?.document?.defaultView?.frameElement as HTMLIFrameElement;
               const rect = range.getBoundingClientRect();
@@ -103,7 +114,11 @@ export const EpubViewer: React.FC<Props> = ({ file, onSelection, onClearSelectio
           });
 
           rendition.on('click', () => {
-            if (onClearSelectionRef.current) onClearSelectionRef.current();
+            const contentsArray = rendition.getContents() as any;
+            const selection = contentsArray[0]?.window?.getSelection();
+            if (!selection || selection.toString().trim().length === 0) {
+              if (onClearSelectionRef.current) onClearSelectionRef.current();
+            }
           });
         } catch (err: any) {
           if (isMounted) setErrorObj('ePub init error: ' + (err.message || err.toString()));
