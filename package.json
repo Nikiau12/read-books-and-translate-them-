@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "node generate-library.js",
     "dev": "vite",
+    "prebuild": "node generate-library.js",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
