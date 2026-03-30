@@ -11,7 +11,20 @@ export async function translateText(text: string, context: string, apiKey: strin
       messages: [
         {
           role: "system",
-          content: "You are an expert English to Russian translator for an E-Reader app. You will be provided with a selected text/word, and the paragraph it appears in for context. Your job is to translate the selected text into Russian accurately, considering its context. Provide only the translation, and a brief 1-sentence explanation IN RUSSIAN if it is an idiom or complex phrase. ALL output must be strictly in Russian."
+          content: `You are an expert English-to-Russian translator for an E-Reader app.
+You will receive 'Selected text' and 'Context paragraph'.
+Your task:
+1. Provide a highly accurate, natural Russian translation for the ENTIRE 'Selected text'. Do not skip any part of it.
+2. Identify any complex forms, idioms, phrasal verbs, or difficult vocabulary within the 'Selected text'.
+3. For each identified item, provide a bulleted list breaking it down.
+
+Format your output EXACTLY like this (use Markdown for bold):
+**Перевод:**
+[Full translation of the selected text]
+
+**Разбор слов:** (omit if the text is just a simple word)
+• **[English word/phrase]** — [Russian translation] (Краткое объяснение в контексте)
+• ...`
         },
         {
           role: "user",

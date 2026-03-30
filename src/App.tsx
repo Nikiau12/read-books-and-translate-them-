@@ -91,18 +91,20 @@ function App() {
                 style={{
                   position: 'fixed',
                   left: `${Math.max(20, Math.min(window.innerWidth - 340, selectedText.rect.left + (selectedText.rect.width / 2) - 160))}px`,
-                  top: `${Math.min(window.innerHeight - 420, selectedText.rect.bottom + 10)}px`,
+                  ...(selectedText.rect.top > 350 
+                    ? { bottom: `${window.innerHeight - selectedText.rect.top + 10}px` } 
+                    : { top: `${selectedText.rect.bottom + 10}px` }),
                   zIndex: 1000,
                 }}
               >
                 <div className="popover-header">Translation</div>
                 <div className="popover-body">
                   <strong>{selectedText.text}</strong>
-                  <div style={{ marginTop: '8px', color: 'var(--text-muted)' }}>
+                  <div style={{ marginTop: '12px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
                     {loading ? (
                       <div className="loading-skeleton"></div>
                     ) : (
-                      <p>{translation}</p>
+                      <div dangerouslySetInnerHTML={{ __html: translation ? translation.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text);">$1</strong>').replace(/\n/g, '<br/>') : '' }}></div>
                     )}
                   </div>
                 </div>
