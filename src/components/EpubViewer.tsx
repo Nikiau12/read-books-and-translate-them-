@@ -59,6 +59,12 @@ export const EpubViewer: React.FC<Props> = ({ file, onSelection, onClearSelectio
           });
           
           let lastTime = 0;
+          let touchStartX = 0;
+          let touchStartY = 0;
+          let touchEndX = 0;
+          let touchEndY = 0;
+          let lastSelectedText = '';
+
           rendition.hooks.content.register((contents: any) => {
             contents.window.addEventListener('wheel', (e: WheelEvent) => {
               const now = Date.now();
@@ -67,20 +73,74 @@ export const EpubViewer: React.FC<Props> = ({ file, onSelection, onClearSelectio
                 if (e.deltaY > 0) rendition.next();
                 else rendition.prev();
                 lastTime = now;
+                lastSelectedText = '';
                 if (onClearSelectionRef.current) onClearSelectionRef.current();
               }
             });
+            
             contents.window.addEventListener('click', () => {
               const selection = contents.window.getSelection();
               if (!selection || selection.toString().trim().length === 0) {
+                lastSelectedText = '';
                 if (onClearSelectionRef.current) onClearSelectionRef.current();
               }
             });
-            contents.window.addEventListener('touchstart', () => {
+            
+            contents.window.addEventListener('touchstart', (e: TouchEvent) => {
+              touchStartX = e.changedTouches[0].screenX;
+              touchStartY = e.changedTouches[0].screenY;
               const selection = contents.window.getSelection();
               if (!selection || selection.toString().trim().length === 0) {
+                lastSelectedText = '';
                 if (onClearSelectionRef.current) onClearSelectionRef.current();
               }
+            }, { passive: true });
+
+            contents.window.addEventListener('touchend', (e: TouchEvent) => {
+              touchEndX = e.changedTouches[0].screenX;
+              touchEndY = e.changedTouches[0].screenY;
+              
+              const SWIPE_THRESHOLD = 50;
+              const xDiff = touchStartX - touchEndX;
+              const yDiff = touchStartY - touchEndY;
+
+              if (Math.abs(xDiff) > Math.abs(yDiff) && Math.abs(xDiff) > SWIPE_THRESHOLD) {
+                if (xDiff > 0) rendition.next();
+                else rendition.prev();
+                lastSelectedText = '';
+                if (onClearSelectionRef.current) onClearSelectionRef.current();
+                return;
+              }
+
+              setTimeout(() => {
+                const selection = contents.window.getSelection();
+                if (selection && selection.toString().trim().length > 0) {
+                  const text = selection.toString().trim();
+                  if (text === lastSelectedText) return;
+                  lastSelectedText = text;
+
+                  const range = selection.getRangeAt(0);
+                  let paragraph = range.commonAncestorContainer.textContent || text;
+                  if (paragraph.length > 1500) {
+                    paragraph = paragraph.substring(0, 1500) + '...';
+                  }
+
+                  const iframe = contents.document.defaultView.frameElement;
+                  const rect = range.getBoundingClientRect();
+                  const iframeRect = iframe.getBoundingClientRect();
+
+                  const adjustedRect = {
+                    left: rect.left + iframeRect.left,
+                    top: rect.top + iframeRect.top,
+                    width: rect.width,
+                    height: rect.height,
+                    bottom: rect.bottom + iframeRect.top,
+                    right: rect.right + iframeRect.left
+                  };
+
+                  onSelectionRef.current(text, paragraph, adjustedRect as DOMRect);
+                }
+              }, 400); // allow mobile native selection UI to draw first
             }, { passive: true });
           });
 
@@ -88,8 +148,9 @@ export const EpubViewer: React.FC<Props> = ({ file, onSelection, onClearSelectio
             book.getRange(cfiRange).then((range) => {
               if (!range) return;
               const text = range.toString().trim();
-              if (!text) return;
+              if (!text || text === lastSelectedText) return;
               
+              lastSelectedText = text;
               let paragraph = range.commonAncestorContainer.textContent || text;
               if (paragraph.length > 1500) {
                 paragraph = paragraph.substring(0, 1500) + '...';
@@ -117,6 +178,7 @@ export const EpubViewer: React.FC<Props> = ({ file, onSelection, onClearSelectio
             const contentsArray = rendition.getContents() as any;
             const selection = contentsArray[0]?.window?.getSelection();
             if (!selection || selection.toString().trim().length === 0) {
+              lastSelectedText = '';
               if (onClearSelectionRef.current) onClearSelectionRef.current();
             }
           });
